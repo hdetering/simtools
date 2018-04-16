@@ -1,0 +1,181 @@
+%YAML 1.2
+---
+#--------------------#
+# general parameters #
+#--------------------#
+
+# output folder
+out-dir: "output"
+
+# how much debug output should be printed to screen? (1: lowest)
+verbosity: 1
+
+# random seed
+seed: 2
+
+#----------------------------#
+# existing seq data as input #
+#----------------------------#
+
+# setting this property deactivates simulation of
+## 1. reference genome
+## 2. reference reads
+## 3. germline mutations
+bam-input: ""
+# file containing reference genome sequence
+reference: ""
+
+
+#-----------------------#
+# clone tree parameters #
+#-----------------------#
+
+# user-provided clone tree (overrides parameters below)
+tree: ""
+# number of clones to simulate
+clones: 5
+
+#-------------------------#
+# reference genome params #
+#-------------------------#
+
+# parameters to generate reference genome
+## number of sequences (e.g. chromosomes) to generate
+ref-seq-num: 1
+## sequence length
+ref-seq-len-mean: 3000000
+ref-seq-len-sd:   0
+## nucleotide frequencies (ACGT)
+ref-nuc-freqs: [ 0.3, 0.2, 0.2, 0.3 ]
+
+#-------------------------------#
+# germline evolution parameters #
+#-------------------------------#
+
+# germline variants (to generate personal genome from reference)
+#mut-gl-vcf: data/input/1000G_phase1.indels.b37.vcf
+mut-gl-num : 3000
+# ratio of homozygous germline variants (not yet implemented...)
+mut-gl-hom : 0.2
+
+# evolutionary model
+# choices: 'JC', 'F81', 'K80', 'HKY', 'matrix', 'matrixFromVcf'
+mut-gl-model: matrix
+mut-gl-model-params:
+  # nucleotide frequencies:
+  nucFreq : [ 0.25, 0.25, 0.25, 0.25 ]
+  # transition-transversion ratio:
+  kappa   : 1
+  # custom nucleotide substitution matrix (ACGT):
+  Qa      : [    0.0, 0.0406, 0.1661, 0.0331 ]
+  Qc      : [ 0.0417,    0.0, 0.0438, 0.1746 ]
+  Qg      : [ 0.1744, 0.0440,    0.0, 0.0418 ]
+  Qt      : [ 0.0331, 0.1662, 0.0405,    0.0 ]
+
+#------------------------------#
+# somatic evolution parameters #
+#------------------------------#
+
+# number of total mutations to simulate
+mut-som-num: 100
+# number of transforming mutations shared by all clones
+# (included in total mutations)
+mut-som-trunk: 40
+
+# single nucleotide variants
+#------------------------------
+
+# somatic variants file
+mut-som-vcf: ""
+
+# Mutational signatures are obtained from COSMIC:
+#   http://cancer.sanger.ac.uk/cosmic/signatures
+mut-som-sig-file: "../resources/signatures_probabilities.txt"
+
+# The following list defines the relative contribution each signature (1-30).
+# Signatures not present in the list will not be applied.
+mut-som-sig-mix:
+  'Signature 1': 1.0
+
+# copy number variants
+#------------------------------
+
+# fraction of CNV events among all mutations (set to 0 to disable CNVs)
+mut-som-cnv-ratio: 0.00
+# minimum length (bp) of CNV events
+mut-som-cnv-len-min: 1000
+# rate parameter for power-law distribution
+mut-som-cnv-len-exp: 1
+# prior probability for a CNV event to be a gain (vs. loss)
+mut-som-cnv-gain-prob: 0.5
+
+# event rates (will be normalized by sum of all rates)
+
+# whole genome duplication rate
+mut-som-cnv-rate-wgd: 0.01
+# whole chromosome gain/loss rate
+mut-som-cnv-rate-chr: 0.05
+# chromosome arm gain/loss rate
+mut-som-cnv-rate-arm: 0.05
+# telomere-bounded gain/loss rate
+mut-som-cnv-rate-tel: 0.40
+# focal gain/loss rate
+mut-som-cnv-rate-foc: 0.49
+
+#-------------------------------#
+#      sampling parameters      #
+#-------------------------------#
+
+# sampling matrix (samples x clones)
+# row sums must be <= 1.0
+# if < 1.0, the difference to 1.0 is interpreted as normal cell contamination
+# first column contains sample name (used to name output files)
+# NOTE: make sure number of columns correspond to "clones" parameter +1
+samples:
+  ## only generate healthy reads:
+  #- [ sample1 ]
+  ## 4x4 scheme
+  - [ sample1, 1.0, 0.0, 0.0, 0.0 ]
+  - [ sample2, 0.0, 1.0, 0.0, 0.0 ]
+  - [ sample3, 0.0, 0.0, 1.0, 0.0 ]
+  - [ sample4, 0.0, 0.0, 0.0, 1.0 ]
+  - [ sampleN, 0.0, 0.0, 0.0, 0.0 ]
+
+#-------------------------------#
+#     sequencing parameters     #
+#-------------------------------#
+
+# haploid depth of coverage
+seq-coverage      : 100
+# whether to generate sequencing reads
+# (if false, simulate read counts directly)
+seq-read-gen      : false
+# sequencing error (per base.)
+# only applied for generating read counts (i.e. seq-read-gen = false)
+seq-rc-error      : 0.01
+# Dispersion parameter for read count distribution
+# WES: low (1-5); WGS: high (20-50)
+seq-rc-disp       : 30
+# minimum alternative read count to report (default: 1)
+seq-rc-min        : 2
+
+# read length
+seq-read-len      : 100
+# mean fragment length (only for paired-end reads)
+seq-frag-len-mean : 500
+# standard deviation of fragment length (only for paired-end reads)
+seq-frag-len-sd   : 20
+# path to ART executable
+seq-art-path      : ""
+# whether to introduce somatic SNVs solely based on expected VAF.
+# NOTE: Speeds up sample generation considerably, but breaks haplotypes.
+#  (When set to 'false', each read pair is assigned to a genomic segment copy.)
+seq-use-vaf       : false
+# whether to use reads from healthy sample for tumor samples
+# NOTE: setting only applied in SNV-only mode (mut-som-cnv-ratio: 0)
+seq-reuse-reads   : true
+# whether to keep FASTQ files
+seq-fq-out        : false
+# whether to generate SAM output
+seq-sam-out       : true
+...
