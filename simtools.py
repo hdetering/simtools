@@ -1,27 +1,70 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
+from simtools import scenario
 
 import os
+import sys
 import random
 import argparse
 
+# globals
+MAX_SEED = 2**32
+
 def run_gen_scenario(args):
-  pass
+  print('''
+Generating tumor configurations (input for CloniPhy simulator).
+-------------------------------------------------------------------------------
+Parameters:
+  number of clones:   {}
+  number of samples:  {}
+  tumor type:         {}
+  replicates:         {}
+  output dir:         {}
+  seed:               {}
+-------------------------------------------------------------------------------
+'''.format(
+    args.nclones, 
+    args.nsamples, 
+    args.ttype, 
+    args.nrep, 
+    os.path.abspath(args.out), 
+    args.seed), 
+  file=sys.stderr)
+
+  for i in range(args.nrep):
+    rep_seed = random.randrange(MAX_SEED)
+    tumor_setup = scenario.get_tumor_setup(
+      args.nclones, 
+      args.nsamples, 
+      args.ttype, 
+      rep_seed)
+    scenario.write_tumor_scenario(tumor_setup, args.out)
 
 def main(args):
+  # generate random random seed if none was provided
+  if args.seed is None:
+    args.seed = random.randrange(MAX_SEED)
   random.seed(int(args.seed))
+  
   args.func(args)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Generate and convert files for use with CloniPhy.')
   subparsers = parser.add_subparsers(title="mode")
 
-  parser_indel = subparsers.add_parser('scenario')
-  parser_indel.add_argument('--nclones', default=3,  help='Number of clones (default: 3).')
-  parser_indel.add_argument('--nsamples', default=5, help='Number of sampled regions (default: 5).')
-  parser_indel.add_argument('--ttype', default='us', help='Tissue structural type; one of "us", "ms", "hs" (default: "us").')
-  parser_indel.add_argument('--nrep', default=1,  help='Number of replicates (default: 1).')
-  parser_indel.add_argument('--seed', default=0, help='Random seed (default: 0).') 
-  parser_indel.set_defaults(func=run_gen_scenario)
+  parser_scenario = subparsers.add_parser('scenario')
+  parser_scenario.add_argument('--nclones', type=int, required=True,  help='Number of clones.')
+  parser_scenario.add_argument('--nsamples', type=int, required=True, help='Number of sampled regions.')
+  parser_scenario.add_argument('--ttype', required=True, help='Tissue structural type; one of "us", "ms", "hs".')
+  parser_scenario.add_argument('--nrep', type=int, default=1,  help='Number of replicates (default: 1).') 
+  parser_scenario.add_argument('--out', default='sims',  help='Output directory (default: "sims")')
+  parser_scenario.add_argument('--seed', type=int, help='Master random seed.') 
+  parser_scenario.set_defaults(func=run_gen_scenario)
+
+  if len(sys.argv) == 1:
+    parser.print_usage(sys.stderr)
+    sys.exit(1)
 
   args = parser.parse_args()
   main(args)

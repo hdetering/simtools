@@ -8,4 +8,12 @@ setup(name='simtools',
       author_email='harald.detering@gmail.com',
       license='GPL-3.0',
       packages=['simtools'],
-      zip_safe=False)
+      install_requires=[
+          'argparse',
+          'numpy',
+          'pandas',
+          'pyaml',
+          'uuid'
+      ],
+      zip_safe=False,
+      include_package_data=True)
