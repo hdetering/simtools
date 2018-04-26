@@ -90,7 +90,7 @@ mut-som-vcf: ""
 
 # Mutational signatures are obtained from COSMIC:
 #   http://cancer.sanger.ac.uk/cosmic/signatures
-mut-som-sig-file: "../resources/signatures_probabilities.txt"
+mut-som-sig-file: "resources/signatures_probabilities.txt"
 
 # The following list defines the relative contribution each signature (1-30).
 # Signatures not present in the list will not be applied.
