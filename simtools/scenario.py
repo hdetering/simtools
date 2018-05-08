@@ -14,8 +14,13 @@ import uuid
 
 class TumorSetup:
   '''Encapsulates configuration parameters for a tumor simulation.'''
-  def __init__(self, tree, prev, samp, p):
+  def __init__(self, tree, prev, samp, p, ttype):
     self.id = str(uuid.uuid1())
+
+    self.nclones = len(prev.columns)
+    self.nsamples = len(prev.index)
+    self.ttype = ttype
+
     self.tree_nwk = tree
     self.df_prev = prev
     self.df_sampling = samp
@@ -114,15 +119,16 @@ def get_tumor_setup(num_clones, num_samples, tumor_type, seed=0, retries=100):
     df_prev.loc[idx, row['sel_clones']] = p
 
   # return result
-  return TumorSetup(tree_nwk, df_prev, df_sampling, p_nclones)
+  return TumorSetup(tree_nwk, df_prev, df_sampling, p_nclones, tumor_type)
 
 
-def write_tumor_scenario(tumor_setup, dir_out_root):
+def write_tumor_scenario(tumor_setup, dir_out_root, args):
   '''Export simulation scenario to file system.
 
   A directory will be created containing:
   1. clone tree as Newick file
   2. config as YAML file
+  3. meta info as YAML file
   '''
 
   # check if config template is available
@@ -147,9 +153,25 @@ def write_tumor_scenario(tumor_setup, dir_out_root):
   # create config file from template
   conf = yaml.load(open(fn_config, 'rt'))
   conf['tree'] = fn_tree
-  conf['samples'] = fn_prev
+  conf['sampling'] = fn_prev
+  if args:
+    if args.seq_art_path:
+      conf['seq-art-path'] = args.seq_art_path
+    if args.seq_coverage:
+      conf['seq-coverage'] = args.seq_coverage
 
   # export config to file
   fn_conf_out = os.path.join(dir_out, 'config.yml')
   with open(fn_conf_out, 'wt') as f:
-    f.write(yaml.dump(conf))
+    yaml.dump(conf, f)
+  
+  # compile meta info
+  meta = {}
+  meta['nclones'] = tumor_setup.nclones
+  meta['nsamples'] = tumor_setup.nsamples
+  meta['ttype'] = tumor_setup.ttype
+
+  # write meta info to file
+  fn_meta_out = os.path.join(dir_out, 'meta.yml')
+  with open(fn_meta_out, 'wt') as f:
+    yaml.dump(meta, f, default_flow_style=False)

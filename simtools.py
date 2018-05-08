@@ -39,7 +39,8 @@ Parameters:
       args.nsamples, 
       args.ttype, 
       rep_seed)
-    scenario.write_tumor_scenario(tumor_setup, args.out)
+    scenario.write_tumor_scenario(tumor_setup, args.out, args)
+    print('{}:\t{}'.format(i+1, os.path.join(os.path.abspath(args.out), tumor_setup.id)))
 
 def main(args):
   # generate random random seed if none was provided
@@ -60,7 +61,10 @@ if __name__ == '__main__':
   parser_scenario.add_argument('--nrep', type=int, default=1,  help='Number of replicates (default: 1).') 
   parser_scenario.add_argument('--out', default='sims',  help='Output directory (default: "sims")')
   parser_scenario.add_argument('--seed', type=int, help='Master random seed.') 
-  parser_scenario.set_defaults(func=run_gen_scenario)
+  group_paths = parser_scenario.add_argument_group('sequencing')
+  group_paths.add_argument('--seq-art-path', help='Path to ART executable.')
+  group_paths.add_argument('--seq-coverage', type=int, help='Sequencing depth.')
+  parser_scenario.set_defaults(func=run_gen_scenario)  
 
   if len(sys.argv) == 1:
     parser.print_usage(sys.stderr)
