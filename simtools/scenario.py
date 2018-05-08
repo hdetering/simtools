@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import print_function
+from __future__ import print_function, division
 
 from . import stat
 from . import tree
@@ -56,17 +56,18 @@ def get_tumor_setup(num_clones, num_samples, tumor_type, seed=0, retries=100):
   lbl_regions = ['R{}'.format(i+1) for i in range(num_samples)]
 
   # init random clone tree topology
-  tree_nwk = tree.get_random_topo(num_clones, lbl_clones)
-  tree_dist = tree.get_leaf_dist(tree_nwk)
+  tree_nwk = tree.get_random_topo_nodes(num_clones, lbl_clones)
+  tree_nwk_leaf = tree.reformat_int_to_leaf(tree_nwk)
+  tree_dist = tree.get_leaf_dist(tree_nwk_leaf)
 
   # get prior probabilities for number of clones per sample
   assert tumor_type in ['hs', 'ms','us'], 'Tumor type must be "hs", "ms" or "us".'
   if tumor_type == 'hs':
-    p_nclones = stat.get_beta_discrete(num_clones, a=1, b=5)
+    p_nclones = stat.get_beta_discrete(num_clones, a=1, b=3)
   elif tumor_type == 'ms':
     p_nclones = stat.get_beta_discrete(num_clones, a=1, b=1)
   elif tumor_type == 'us':
-    p_nclones = stat.get_beta_discrete(num_clones, a=5, b=1)
+    p_nclones = stat.get_beta_discrete(num_clones, a=3, b=1)
 
   # choose number of clones for each sample:
   nclones = np.random.choice(

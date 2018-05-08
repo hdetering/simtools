@@ -131,7 +131,7 @@ mut-som-cnv-rate-foc: 0.49
 # if < 1.0, the difference to 1.0 is interpreted as normal cell contamination
 # first column contains sample name (used to name output files)
 # NOTE: make sure number of columns correspond to "clones" parameter +1
-samples:
+sampling:
   ## only generate healthy reads:
   #- [ sample1 ]
   ## 4x4 scheme
