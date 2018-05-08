@@ -67,11 +67,11 @@ def get_tumor_setup(num_clones, num_samples, tumor_type, seed=0, retries=100):
   # get prior probabilities for number of clones per sample
   assert tumor_type in ['hs', 'ms','us'], 'Tumor type must be "hs", "ms" or "us".'
   if tumor_type == 'hs':
-    p_nclones = stat.get_beta_discrete(num_clones, a=1, b=5)
+    p_nclones = stat.get_beta_discrete(num_clones, a=1, b=3)
   elif tumor_type == 'ms':
     p_nclones = stat.get_beta_discrete(num_clones, a=1, b=1)
   elif tumor_type == 'us':
-    p_nclones = stat.get_beta_discrete(num_clones, a=5, b=1)
+    p_nclones = stat.get_beta_discrete(num_clones, a=3, b=1)
 
   # choose number of clones for each sample:
   nclones = np.random.choice(
