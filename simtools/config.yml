@@ -60,12 +60,12 @@ mut-gl-hom : 0.2
 
 # evolutionary model
 # choices: 'JC', 'F81', 'K80', 'HKY', 'matrix', 'matrixFromVcf'
-mut-gl-model: matrix
+mut-gl-model: HKY
 mut-gl-model-params:
   # nucleotide frequencies:
-  nucFreq : [ 0.25, 0.25, 0.25, 0.25 ]
+  nucFreq : [ 0.3, 0.2, 0.2, 0.3 ]
   # transition-transversion ratio:
-  kappa   : 1
+  kappa   : 1.7
   # custom nucleotide substitution matrix (ACGT):
   Qa      : [    0.0, 0.0406, 0.1661, 0.0331 ]
   Qc      : [ 0.0417,    0.0, 0.0438, 0.1746 ]
