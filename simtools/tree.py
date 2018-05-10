@@ -18,9 +18,9 @@ def get_random_topo_leaves(num_leaves, lbl_leaves):
 def get_random_topo_nodes(num_nodes, lbl_nodes):
   '''Generate random tree topology for a given set of nodes.'''
 
-  tree_ete = ete3.Tree(name=lbl_nodes[0], dist=1.0)
+  tree_ete = ete3.Tree(name='H', dist=0.0)
   nodes = [tree_ete]
-  for i in range(1, num_nodes):
+  for i in range(num_nodes):
     parent = random.choice(nodes)
     child = parent.add_child(name=lbl_nodes[i], dist=1.0)
     nodes.append(child)
