@@ -35,7 +35,7 @@ def get_random_topo_nodes(num_nodes, lbl_nodes, lbl_root='H'):
   Newick representation of generated tree.
   '''
 
-  tree_ete = ete3.Tree(name=lbl_root, dist=0.0)
+  tree_ete = ete3.Tree(name=lbl_root, dist=1.0)
   nodes = [tree_ete]
   for i in range(num_nodes):
     parent = random.choice(nodes)
@@ -55,7 +55,7 @@ def reformat_int_to_leaf(tree_nwk, ignore_root=True):
       if node.is_root() and ignore_root:
         continue
       # create new leaf node
-      leaf = ete3.TreeNode(name=node.name, dist=0)
+      leaf = ete3.TreeNode(name=node.name, dist=0.0)
       # mark populated internal node as unpopulated
       node.name = ''
       # attach leaf to internal node
