@@ -57,12 +57,13 @@ def get_tumor_setup(num_clones, num_samples, tumor_type, seed=0, retries=100):
   np.random.seed(seed)
 
   # define labels for clones and samples
+  lbl_healthy = 'H'
   lbl_clones = ['C{}'.format(i+1) for i in range(num_clones)]
   lbl_regions = ['R{}'.format(i+1) for i in range(num_samples)]
 
   # init random clone tree topology
-  tree_nwk = tree.get_random_topo_nodes(num_clones, lbl_clones)
-  tree_nwk_leaf = tree.reformat_int_to_leaf(tree_nwk)
+  tree_nwk = tree.get_random_topo_nodes(num_clones, lbl_clones, lbl_healthy)
+  tree_nwk_leaf = tree.reformat_int_to_leaf(tree_nwk, ignore_root=True)
   tree_dist = tree.get_leaf_dist(tree_nwk_leaf)
 
   # get prior probabilities for number of clones per sample
