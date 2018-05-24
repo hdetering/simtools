@@ -62,6 +62,7 @@ if __name__ == '__main__':
   parser_scenario.add_argument('--out', default='sims',  help='Output directory (default: "sims")')
   parser_scenario.add_argument('--seed', type=int, help='Master random seed.') 
   group_paths = parser_scenario.add_argument_group('sequencing')
+  group_paths.add_argument('--seq-read-gen', type=bool, default=False, help='Simulate reads? (false: simulate read counts)')
   group_paths.add_argument('--seq-art-path', help='Path to ART executable.')
   group_paths.add_argument('--seq-coverage', type=int, help='Sequencing depth.')
   parser_scenario.set_defaults(func=run_gen_scenario)  
