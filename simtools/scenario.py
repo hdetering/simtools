@@ -57,7 +57,8 @@ def get_tumor_setup(num_clones, num_samples, tumor_type, seed=0, retries=100):
   np.random.seed(seed)
 
   # define labels for clones and samples
-  lbl_healthy = 'H'
+  lbl_healthy = 'H' # healthy cells clone
+  lbl_normal = 'RN' # normal sample
   lbl_clones = ['C{}'.format(i+1) for i in range(num_clones)]
   lbl_regions = ['R{}'.format(i+1) for i in range(num_samples)]
 
@@ -118,6 +119,9 @@ def get_tumor_setup(num_clones, num_samples, tumor_type, seed=0, retries=100):
   for idx, row in df_sampling.iterrows():
     p = np.random.dirichlet([1]*row['nclones'])
     df_prev.loc[idx, row['sel_clones']] = p
+
+  # add additional row for "normal" (healthy) sample
+  df_prev.loc[lbl_normal] = [0.0]*num_clones
 
   # return result
   return TumorSetup(tree_nwk, df_prev, df_sampling, p_nclones, tumor_type)
