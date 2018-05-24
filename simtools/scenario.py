@@ -157,7 +157,7 @@ def write_tumor_scenario(tumor_setup, dir_out_root, args):
   conf['sampling'] = fn_prev
   if args:
     if args.seq_read_gen:
-      conf['seq_read_gen'] = args.seq_read_gen
+      conf['seq-read-gen'] = args.seq_read_gen
     if args.seq_art_path:
       conf['seq-art-path'] = args.seq_art_path
     if args.seq_coverage:
