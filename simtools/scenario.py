@@ -160,7 +160,7 @@ def write_tumor_scenario(tumor_setup, dir_out_root, args):
   conf['tree'] = fn_tree
   conf['sampling'] = fn_prev
   if args:
-    if args.seed not None:
+    if args.seed is not None:
       conf['seed'] = args.seed
     if args.seq_read_gen:
       conf['seq-read-gen'] = args.seq_read_gen
