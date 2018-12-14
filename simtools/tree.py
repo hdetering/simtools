@@ -23,6 +23,7 @@ def get_random_topo_nodes(num_nodes, lbl_nodes, lbl_root='H'):
   2: For each non-root node n:
   3:   Pick a random parent node p in S.
   4:   Add n as a child of p with branch length 1.
+  5: Add root node as parent of previous root
 
   Parameters
   ---
@@ -35,12 +36,15 @@ def get_random_topo_nodes(num_nodes, lbl_nodes, lbl_root='H'):
   Newick representation of generated tree.
   '''
 
-  tree_ete = ete3.Tree(name=lbl_root, dist=1.0)
-  nodes = [tree_ete]
-  for i in range(num_nodes):
+  tree = ete3.Tree(name=lbl_nodes[0], dist=1.0)
+  nodes = [tree]
+  for i in range(1, num_nodes):
     parent = random.choice(nodes)
     child = parent.add_child(name=lbl_nodes[i], dist=1.0)
     nodes.append(child)
+
+  tree_ete = ete3.Tree(name=lbl_root, dist=1.0)
+  tree_ete.add_child(child=tree)  
 
   tree_nwk = tree_ete.write(format=1, format_root_node=True)
   return tree_nwk

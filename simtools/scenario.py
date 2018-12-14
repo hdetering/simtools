@@ -14,7 +14,7 @@ import uuid
 
 class TumorSetup:
   '''Encapsulates configuration parameters for a tumor simulation.'''
-  def __init__(self, tree, prev, samp, p, ttype):
+  def __init__(self, tree, prev, samp, p, ttype, seed):
     self.id = str(uuid.uuid1())
 
     self.nclones = len(prev.columns)
@@ -25,6 +25,7 @@ class TumorSetup:
     self.df_prev = prev
     self.df_sampling = samp
     self.p_nclones = p
+    self.seed = seed
 
 def pick_prevalence_unbiased(n):
   prev = np.random.dirichlet([1]*n)
@@ -124,7 +125,7 @@ def get_tumor_setup(num_clones, num_samples, tumor_type, seed=0, retries=100):
   df_prev.loc[lbl_normal] = [0.0]*num_clones
 
   # return result
-  return TumorSetup(tree_nwk, df_prev, df_sampling, p_nclones, tumor_type)
+  return TumorSetup(tree_nwk, df_prev, df_sampling, p_nclones, tumor_type, seed)
 
 
 def write_tumor_scenario(tumor_setup, dir_out_root, args):
@@ -157,11 +158,12 @@ def write_tumor_scenario(tumor_setup, dir_out_root, args):
 
   # create config file from template
   conf = yaml.load(open(fn_config, 'rt'))
+  conf['seed'] = tumor_setup.seed
   conf['tree'] = fn_tree
   conf['sampling'] = fn_prev
   if args:
-    if args.seed is not None:
-      conf['seed'] = args.seed
+    if args.mut_som_trunk:
+      conf['mut-som-trunk'] = args.mut_som_trunk
     if args.seq_read_gen:
       conf['seq-read-gen'] = args.seq_read_gen
     if args.seq_art_path:
