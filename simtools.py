@@ -24,21 +24,30 @@ Parameters:
   seed:               {}
 -------------------------------------------------------------------------------
 '''.format(
-    args.nclones, 
-    args.nsamples, 
-    args.ttype, 
-    args.nrep, 
-    os.path.abspath(args.out), 
-    args.seed), 
+    args.nclones,
+    args.nsamples,
+    args.ttype,
+    args.nrep,
+    os.path.abspath(args.out),
+    args.seed),
   file=sys.stderr)
 
   for i in range(args.nrep):
     rep_seed = random.randrange(MAX_SEED)
-    tumor_setup = scenario.get_tumor_setup(
-      args.nclones, 
-      args.nsamples, 
-      args.ttype, 
-      rep_seed)
+    if args.ttype == 'DEC':
+      tumor_setup = scenario.get_tumor_setup_DEC(
+        args.nclones,
+        args.nsamples,
+        args.disp,
+        args.ext,
+        rep_seed
+      )
+    else:
+      tumor_setup = scenario.get_tumor_setup(
+        args.nclones,
+        args.nsamples,
+        args.ttype,
+        rep_seed)
     scenario.write_tumor_scenario(tumor_setup, args.out, args)
     print('{}:\t{}'.format(i+1, os.path.join(os.path.abspath(args.out), tumor_setup.id)))
 
@@ -47,7 +56,7 @@ def main(args):
   if args.seed is None:
     args.seed = random.randrange(MAX_SEED)
   random.seed(int(args.seed))
-  
+
   args.func(args)
 
 if __name__ == '__main__':
@@ -57,15 +66,17 @@ if __name__ == '__main__':
   parser_scenario = subparsers.add_parser('scenario')
   parser_scenario.add_argument('--nclones', type=int, required=True,  help='Number of clones.')
   parser_scenario.add_argument('--nsamples', type=int, required=True, help='Number of sampled regions.')
-  parser_scenario.add_argument('--ttype', required=True, help='Tissue structural type; one of "us", "ms", "hs".')
-  parser_scenario.add_argument('--nrep', type=int, default=1,  help='Number of replicates (default: 1).') 
+  parser_scenario.add_argument('--ttype', required=True, help='Tissue structural type; one of "us", "ms", "hs", "DEC".')
+  parser_scenario.add_argument('--disp', help='DEC only: dispersal rate matrix (nsamples X nsamples); CSV file, no header.')
+  parser_scenario.add_argument('--ext', help='DEC only: extinction rates (single value or nsamples); single line CSV file.')
+  parser_scenario.add_argument('--nrep', type=int, default=1,  help='Number of replicates (default: 1).')
   parser_scenario.add_argument('--out', default='sims',  help='Output directory (default: "sims")')
-  parser_scenario.add_argument('--seed', type=int, help='Master random seed.') 
+  parser_scenario.add_argument('--seed', type=int, help='Master random seed.')
   group_paths = parser_scenario.add_argument_group('sequencing')
   group_paths.add_argument('--seq-read-gen', type=bool, default=False, help='Simulate reads? (false: simulate read counts)')
   group_paths.add_argument('--seq-art-path', help='Path to ART executable.')
   group_paths.add_argument('--seq-coverage', type=int, help='Sequencing depth.')
-  parser_scenario.set_defaults(func=run_gen_scenario)  
+  parser_scenario.set_defaults(func=run_gen_scenario)
 
   if len(sys.argv) == 1:
     parser.print_usage(sys.stderr)
