@@ -23,6 +23,7 @@ def get_random_topo_nodes(num_nodes, lbl_nodes, lbl_root='H'):
   2: For each non-root node n:
   3:   Pick a random parent node p in S.
   4:   Add n as a child of p with branch length 1.
+  5: Add root node as parent of previous root
 
   Parameters
   ---
@@ -35,20 +36,23 @@ def get_random_topo_nodes(num_nodes, lbl_nodes, lbl_root='H'):
   Newick representation of generated tree.
   '''
 
-  tree_ete = ete3.Tree(name=lbl_root, dist=1.0)
-  nodes = [tree_ete]
-  for i in range(num_nodes):
+  tree = ete3.Tree(name=lbl_nodes[0], dist=1.0)
+  nodes = [tree]
+  for i in range(1, num_nodes):
     parent = random.choice(nodes)
     child = parent.add_child(name=lbl_nodes[i], dist=1.0)
     nodes.append(child)
 
+  tree_ete = ete3.Tree(name=lbl_root, dist=1.0)
+  tree_ete.add_child(child=tree)
+
   tree_nwk = tree_ete.write(format=1, format_root_node=True)
   return tree_nwk
 
-def reformat_int_to_leaf(tree_nwk, ignore_root=True):
+def reformat_int_to_leaf(tree_nwk, ignore_root=True, format=1):
   '''Reformat tree: pull out internal nodes as leafs.'''
 
-  tree_ete = ete3.Tree(tree_nwk, format=1)
+  tree_ete = ete3.Tree(tree_nwk, format=format)
   for node in tree_ete.traverse():
     if not node.is_leaf():
       # ignore root node if requested
@@ -61,11 +65,23 @@ def reformat_int_to_leaf(tree_nwk, ignore_root=True):
       # attach leaf to internal node
       node.add_child(leaf)
 
-  return tree_ete.write()
+  return tree_ete.write(format=format)
+
+def reformat_to_ultrametric(tree_nwk, format=1):
+  '''Reformat tree: stretch branches so all tips have same distance to root.'''
+  tree_ete = ete3.Tree(tree_nwk, format=format)
+  tree_ete.convert_to_ultrametric()
+  return tree_ete.write(format=format)
+
+def get_internal_nodes(tree_nwk, format=1):
+  '''Returns labels of internal nodes in a tree.'''
+  tree_ete = ete3.Tree(tree_nwk, format=format)
+  lst_labels = [n.name for n in tree_ete.traverse('preorder') if not n.is_leaf()]
+  return lst_labels
 
 def get_leaf_dist(tree_nwk):
   '''Get pairwise distances between leafs of a tree.'''
-  
+
   # read tree from Newick
   try:
     tree_dp = dendropy.Tree.get(data=tree_nwk, schema='newick')
@@ -85,15 +101,15 @@ def get_leaf_dist(tree_nwk):
       d = m.patristic_distance(tax1, tax2)
       df.loc[tax1.label, tax2.label] = d
       df.loc[tax2.label, tax1.label] = d
-    
+
   return df
 
 def pick_related_nodes(n, dist, e_init):
   '''Choose a set of nodes related to an initial node.'''
-  
+
   # make sure input is of the expected type
   assert type(dist) is pd.DataFrame, 'Expected type of parameter "dist": pandas.DataFrame'
-  
+
   # get distances for initial element
   d = dist.loc[e_init, dist.columns != e_init]
   # transform distances to similarities
@@ -102,5 +118,5 @@ def pick_related_nodes(n, dist, e_init):
   p = s / sum(s)
   # choose elements according to probabilities
   res = np.random.choice(p.index, n, replace=False, p=p)
-  
+
   return res

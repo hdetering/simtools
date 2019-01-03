@@ -80,7 +80,7 @@ mut-gl-model-params:
 mut-som-num: 100
 # number of transforming mutations shared by all clones
 # (included in total mutations)
-mut-som-trunk: 40
+mut-som-trunk: 0
 
 # single nucleotide variants
 #------------------------------

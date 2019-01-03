@@ -18,7 +18,7 @@ import uuid
 
 class TumorSetup:
   '''Encapsulates configuration parameters for a tumor simulation.'''
-  def __init__(self, tree, prev, samp, p, ttype):
+  def __init__(self, tree, prev, samp, p, ttype, seed):
     self.id = str(uuid.uuid1())
 
     self.nclones = len(prev.columns)
@@ -29,6 +29,7 @@ class TumorSetup:
     self.df_prev = prev
     self.df_sampling = samp
     self.p_nclones = p
+    self.seed = seed
 
 def powerset(iterable):
     'powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)'
@@ -169,7 +170,7 @@ def get_tumor_setup(num_clones, num_samples, tumor_type, seed=0, retries=100):
   df_prev.loc[lbl_normal] = [0.0]*num_clones
 
   # return result
-  return TumorSetup(tree_nwk, df_prev, df_sampling, p_nclones, tumor_type)
+  return TumorSetup(tree_nwk, df_prev, df_sampling, p_nclones, tumor_type, seed)
 
 #-------------------------------------------------------------------------------
 # DEC biogeographical model
@@ -232,6 +233,8 @@ def get_tumor_setup_DEC(num_clones, num_samples, disp, ext, seed=0):
   4. Prior used for selection of shared clones per sample. (DataFrame)
   '''
 
+  # SANITY CHECKS
+  #-----------------------------------------------------------------------------
   # read/generate dispersal rates
   if not disp: # assume symmetrically uniform dispersal rates between regions
     disp = np.ones((num_samples, num_samples))
@@ -281,25 +284,41 @@ def get_tumor_setup_DEC(num_clones, num_samples, disp, ext, seed=0):
   lbl_clones = ['C{}'.format(i+1) for i in range(num_clones)]
   lbl_regions = ['R{}'.format(i+1) for i in range(num_regions)]
 
+  # PREP CLONE TREE
+  #-----------------------------------------------------------------------------
   # init random clone tree topology
   tree_nwk = tree.get_random_topo_nodes(num_clones, lbl_clones, lbl_healthy)
+  # record internal nodes
+  lst_int_nodes = tree.get_internal_nodes(tree_nwk)
+  # convert internal nodes to tips
+  tree_leaf_nwk = tree.reformat_int_to_leaf(tree_nwk, ignore_root=True)
+  # make all tips have same distance to root
+  tree_ultra_nwk = tree.reformat_to_ultrametric(tree_leaf_nwk)
 
+  # RANGE EVOLUTION
+  #-----------------------------------------------------------------------------
   # construct instantaneous rate matrix
   Q = get_rate_matrix(disp, ext)
 
   # simulate range evolution
   clone_range = {}
-  tree_ete = ete3.Tree(tree_nwk, format=1)
+  tree_ete = ete3.Tree(tree_leaf_nwk, format=1)
   # pick random region for root clone
   clone_range[tree_ete.name] = [random.randrange(num_regions)]
   # pick ranges for remaining tree nodes, dependent on parent range
   for node in tree_ete.traverse('preorder'): # preorder: root, left, right
+    anc_range = clone_range[node.name] # ancestral range
     for child in node.children:
+      # assign source range
+      if child.name in lst_int_nodes: # internal node inherit ancestral range
+        src_range = anc_range
+      else: # tips emerge in random area of ancestral range
+        src_range = [np.random.choice(anc_range)]
       # calculate transition probabilities
       t = child.dist
       P = expm(Q*t)
       # select child's range index from probabilities in P
-      probs = P[range2idx(clone_range[node.name])]
+      probs = P[range2idx(src_range)]
       child_range_idx = np.random.choice(len(probs), p=probs)
       clone_range[child.name] = idx2range(child_range_idx)
 
@@ -316,7 +335,7 @@ def get_tumor_setup_DEC(num_clones, num_samples, disp, ext, seed=0):
   df_prev.loc[lbl_normal] = [0.0]*num_clones
 
   # return result
-  return TumorSetup(tree_nwk, df_prev, None, None, "DEC")
+  return TumorSetup(tree_nwk, df_prev, None, None, "DEC", seed)
 
 def write_tumor_scenario(tumor_setup, dir_out_root, args):
   '''Export simulation scenario to file system.
@@ -348,11 +367,12 @@ def write_tumor_scenario(tumor_setup, dir_out_root, args):
 
   # create config file from template
   conf = yaml.load(open(fn_config, 'rt'))
+  conf['seed'] = tumor_setup.seed
   conf['tree'] = fn_tree
   conf['sampling'] = fn_prev
   if args:
-    if args.seed is not None:
-      conf['seed'] = args.seed
+    if args.mut_som_trunk:
+      conf['mut-som-trunk'] = args.mut_som_trunk
     if args.seq_read_gen:
       conf['seq-read-gen'] = args.seq_read_gen
     if args.seq_art_path:
