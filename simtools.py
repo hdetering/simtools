@@ -40,6 +40,7 @@ Parameters:
         args.nsamples,
         args.disp,
         args.ext,
+        args.cont,
         rep_seed
       )
     else:
@@ -67,6 +68,7 @@ if __name__ == '__main__':
   parser_scenario = subparsers.add_parser('scenario')
   parser_scenario.add_argument('--nclones', type=int, required=True,  help='Number of clones.')
   parser_scenario.add_argument('--nsamples', type=int, required=True, help='Number of sampled regions.')
+  parser_scenario.add_argument('--cont', default='F:0', help='Contamination with normal cells (distribution) [F:0]')
   parser_scenario.add_argument('--ttype', required=True, help='Tissue structural type; one of "us", "ms", "hs".')
   parser_scenario.add_argument('--disp', help='DEC only: dispersal rate matrix (nsamples X nsamples); CSV file, no header.')
   parser_scenario.add_argument('--ext', help='DEC only: extinction rates (single value or nsamples); single line CSV file.')

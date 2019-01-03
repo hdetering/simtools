@@ -210,7 +210,7 @@ def get_prev_random(df_pres):
   print(df_prev)
   return df_prev
 
-def get_tumor_setup_DEC(num_clones, num_samples, disp, ext, seed=0):
+def get_tumor_setup_DEC(num_clones, num_samples, disp, ext, cont='F:0', seed=0):
   '''Generate configuration for a tumor sequencing dataset.
 
   A setup comprises multiple clones and sampling regions and
@@ -223,6 +223,7 @@ def get_tumor_setup_DEC(num_clones, num_samples, disp, ext, seed=0):
   :num_samples: Number of tumor regions sampled.
   :disp:        Dispersal rates between regions. (numpy.array)
   :ext:         Extinction rates within each region.
+  :cont:        Contamination (distribution)
   :seed:        Random seed.
 
   Output
@@ -331,8 +332,14 @@ def get_tumor_setup_DEC(num_clones, num_samples, disp, ext, seed=0):
 
   # assign prevalence values for each clone and region
   df_prev = get_prev_random(df_pres)
+
+  # add healthy clone
+  prev_healthy = stat.get_random_number(cont, num_samples)
+  df_prev = df_prev - df_prev.multiply(prev_healthy, axis=0)
+  df_prev[lbl_healthy] = pd.Series(prev_healthy, index=df_prev.index)
+
   # add additional row for "normal" (healthy) sample
-  df_prev.loc[lbl_normal] = [0.0]*num_clones
+  df_prev.loc[lbl_normal] = ([0.0]*num_clones) + [1.0]
 
   # return result
   return TumorSetup(tree_nwk, df_prev, None, None, "DEC", seed)
@@ -363,7 +370,7 @@ def write_tumor_scenario(tumor_setup, dir_out_root, args):
   # write prevalence matrix to file
   fn_prev = 'clone_prev.csv'
   path_prev = os.path.join(dir_out, fn_prev)
-  tumor_setup.df_prev.to_csv(path_prev, float_format='%.2f')
+  tumor_setup.df_prev.to_csv(path_prev, float_format='%.4f')
 
   # create config file from template
   conf = yaml.load(open(fn_config, 'rt'))
