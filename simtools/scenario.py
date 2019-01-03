@@ -318,9 +318,9 @@ def get_tumor_setup_DEC(num_clones, num_samples, disp, ext, cont='F:0', seed=0):
       # calculate transition probabilities
       t = child.dist
       P = expm(Q*t)
-      # select child's range index from probabilities in P
+      # select child's range index from probabilities in P (excluding empty range)
       probs = P[range2idx(src_range)]
-      child_range_idx = np.random.choice(len(probs), p=probs)
+      child_range_idx = np.random.choice(np.arange(1, len(probs)), p=probs[1:])
       clone_range[child.name] = idx2range(child_range_idx)
 
   # construct presence matrix from ranges on tree nodes
