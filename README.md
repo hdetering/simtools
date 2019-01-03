@@ -15,7 +15,7 @@ The python package uses the following *dependecies*:
 The can be installed safely, e.g., by using a `conda` environment:
 
 ```
-conda create -n simtools
+conda create -c bioconda -n simtools
 source activate simtools
 ```
 
