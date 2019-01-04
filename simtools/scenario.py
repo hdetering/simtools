@@ -379,6 +379,16 @@ def write_tumor_scenario(tumor_setup, dir_out_root, args):
   conf['tree'] = fn_tree
   conf['sampling'] = fn_prev
   if args:
+    if args.ref_seq_num:
+      conf['ref-seq-num'] = args.ref_seq_num
+    if args.ref_seq_len_mean:
+      conf['ref-seq-len-mean'] = args.ref_seq_len_mean
+    if args.ref_seq_len_sd:
+      conf['ref-seq-len-sd'] = args.ref_seq_len_sd
+    if args.mut_gl_num:
+      conf['mut-gl-num'] = args.mut_gl_num
+    if args.mut_som_num:
+      conf['mut-som-num'] = args.mut_som_num
     if args.mut_som_trunk:
       conf['mut-som-trunk'] = args.mut_som_trunk
     if args.seq_read_gen:

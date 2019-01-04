@@ -77,8 +77,14 @@ if __name__ == '__main__':
   parser_scenario.add_argument('--seed', type=int, help='Master random seed.')
   parser_scenario.add_argument('--retries', type=int, default=100, help='Number of retries in sampling phase [100].')
 
+  group_ref = parser_scenario.add_argument_group('reference')
+  group_ref.add_argument('--ref-seq-num', type=int, default=1, help='Number of reference sequences (e.g. chromosomes) to generate [1].')
+  group_ref.add_argument('--ref-seq-len-mean', type=int, default=10000000, help='Mean sequence bp length [10,000,000].')
+  group_ref.add_argument('--ref-seq-len-sd', type=int, default=0, help='Standard deviation of sequence length [0].')
   group_mut = parser_scenario.add_argument_group('mutations')
-  group_mut.add_argument('--mut-som-trunk', default=0, help='Number of trunk (i.e. clonal) mutations [0]')
+  group_mut.add_argument('--mut-gl-num', type=int, default=10000, help='Number of germline mutations [10,000].')
+  group_mut.add_argument('--mut-som-num', type=int, default=500, help='Number of somatic mutations [500].')
+  group_mut.add_argument('--mut-som-trunk', type=int, default=0, help='Number of trunk (i.e. clonal) mutations [0].')
 
   group_seq = parser_scenario.add_argument_group('sequencing')
   group_seq.add_argument('--seq-read-gen', type=bool, default=False, help='Simulate reads? (false: simulate read counts)')
