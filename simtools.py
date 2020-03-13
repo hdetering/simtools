@@ -141,8 +141,8 @@ if __name__ == '__main__':
   group_ref.add_argument('--ref-seq-len-sd', type=int, default=0, help='Standard deviation of sequence length [0].')
   
   group_mut = parser_scenario.add_argument_group('mutations')
-  group_mut.add_argument('--mut-gl-num', default='U:1000,10000', help='Number of germline mutations.')
-  group_mut.add_argument('--mut-som-num', default='U:20,10000', help='Number of somatic mutations.')
+  group_mut.add_argument('--mut-gl-rate', default='F:1e-3', help='Number of germline mutations.')
+  group_mut.add_argument('--mut-som-rate', default='F:1e-4', help='Number of somatic mutations.')
   group_mut.add_argument('--mut-som-trunk', default='F:0.1', help='Fraction of trunk (i.e. clonal) mutations.')
   group_mut.add_argument('--mut-som-cnv-ratio', default='F:0.0', help='Expected fraction of somatic CNVs.')
 
