@@ -23,7 +23,7 @@ seed: 2
 ## 3. germline mutations
 bam-input: ""
 # file containing reference genome sequence
-reference: ""
+ref-fasta: ""
 
 
 #-----------------------#
@@ -51,6 +51,10 @@ ref-seq-len-mean: 1000000
 ref-seq-len-sd:   0
 ## nucleotide frequencies (ACGT)
 ref-nuc-freqs: [ 0.3, 0.2, 0.2, 0.3 ]
+
+# generate reference sequences based on human trinucleotide frequencies
+ref-use-trinuc: true
+ref-trinuc-profile: /home/uvi/be/hde/code/cloniphy/resources/trinuc_freqs.hs37d5.csv
 
 #-------------------------------#
 # germline evolution parameters #
