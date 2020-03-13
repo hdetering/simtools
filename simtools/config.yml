@@ -32,6 +32,10 @@ reference: ""
 
 # user-provided clone tree (overrides parameters below)
 tree: ""
+# label of (healthy) outgroup node in clone tree
+tree-healthy-label: "healthy"
+# whether to add an additional healthy node below the root (only if not present yet)
+tree-add-healthy-node: false
 # number of clones to simulate
 clones: 5
 
@@ -41,9 +45,9 @@ clones: 5
 
 # parameters to generate reference genome
 ## number of sequences (e.g. chromosomes) to generate
-ref-seq-num: 1
+ref-seq-num: 10
 ## sequence length
-ref-seq-len-mean: 3000000
+ref-seq-len-mean: 1000000
 ref-seq-len-sd:   0
 ## nucleotide frequencies (ACGT)
 ref-nuc-freqs: [ 0.3, 0.2, 0.2, 0.3 ]
@@ -152,12 +156,12 @@ seq-coverage      : 100
 seq-read-gen      : false
 # sequencing error (per base.)
 # only applied for generating read counts (i.e. seq-read-gen = false)
-seq-rc-error      : 0.01
+seq-rc-error      : 0.00
 # Dispersion parameter for read count distribution
 # WES: low (1-5); WGS: high (20-50)
 seq-rc-disp       : 30
 # minimum alternative read count to report (default: 1)
-seq-rc-min        : 2
+seq-rc-min        : 0
 
 # read length
 seq-read-len      : 100
