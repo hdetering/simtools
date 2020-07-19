@@ -54,7 +54,8 @@ ref-nuc-freqs: [ 0.3, 0.2, 0.2, 0.3 ]
 
 # generate reference sequences based on human trinucleotide frequencies
 ref-use-trinuc: true
-ref-trinuc-profile: /home/uvi/be/hde/code/cloniphy/resources/trinuc_freqs.hs37d5.csv
+#ref-trinuc-profile: /home/uvi/be/hde/code/cloniphy/resources/trinuc_freqs.hs37d5.csv
+ref-trinuc-profile: /home/harry/code/cloniphy/resources/trinuc_freqs.hs37d5.csv
 
 #-------------------------------#
 # germline evolution parameters #

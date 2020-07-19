@@ -3,6 +3,7 @@
 import re
 import sys
 import numpy as np
+from pydoc import locate  # dynamic type casts
 from scipy.stats import beta, uniform
 
 class Distribution:
@@ -21,7 +22,8 @@ class Distribution:
       raise ValueError('Invalid distribution: "{}"'.format(str_dist))
     
     # regex: distro spec (up to 3 params allowed)
-    r = '^(?P<d>[A-Z]+):(?P<p1>[0-9.]+)(,(?P<p2>[0-9.]+))?(,(?P<p3>[0-9.]+))?$'
+    rx_num = r'[0-9]*(\.[0-9]+)?(e[+\-]?[0-9]+)?' # scientific number format
+    r = r'^(?P<d>[A-Z]+):(?P<p1>%s)(,(?P<p2>%s))?(,(?P<p3>%s))?$' % tuple([rx_num]*3)
     m = re.match(r, str_dist, re.IGNORECASE)
     if not m or not m.group('d'):
       raise ValueError('Invalid distribution: "{}"'.format(str_dist))
@@ -59,14 +61,38 @@ class Distribution:
 
 def is_distribution(str_dist):
   #regex = '^[FU]:[0-9.]+(,[0-9.]+)*$'
-  rx_uni = '^F:[0-9.]+$'
-  rx_bin = '^(B|U):[0-9.]+,[0-9.]+$'
+  rx_num = r'[0-9]*(\.[0-9]+)?(e[+\-]?[0-9]+)?' # scientific number format
+  rx_uni = r'^F:%s$' % rx_num
+  rx_bin = r'^(B|U):%s,%s$' % (rx_num, rx_num)
   regex = '|'.join([rx_uni, rx_bin])
   if re.match(regex, str_dist, re.IGNORECASE):
     return True
   else:
     return False
 
+def set_values_for_params(params, n):
+  '''Sample n values from the distribution given for each parameter.
+
+  Expected keys in 'params':
+    'user' : Value as specified by the user (can be distribution or fixed value)
+    'type' : Data type to return (specified as string)
+  
+  Output: Adds a key 'rep_val' which contains sampled values for n replicates
+  '''
+
+  for p in params:
+    v = params[p]['user']
+    t = params[p]['type']
+    #print('[DEBUG] {} : {}'.format(p, v))
+    # check if user param specifies a distribution
+    if is_distribution(str(v)): # sample replicate values from distribution
+      print('{}: using distribution "{}"'.format(p, v))
+      d = Distribution(v)
+      l = d.sample(n)
+      params[p]['rep_val'] = [locate(t)(x) for x in l]
+    else: # same value for all replicates
+      nv = locate(t)(v) if not (v is None) else None
+      params[p]['rep_val'] = [nv] * n
 
 def get_beta_discrete(num_bins, a, b):
   # boundaries of bins

@@ -45,7 +45,9 @@ class TumorSetup:
     self.smp_dec_rext  = 0.1 # extinction rate in each region
     # mutation attributes
     self.mut_gl_num = 0
+    self.mut_gl_rate = 0.0
     self.mut_som_num = 0
+    self.mut_som_rate = 0.0
     self.mut_som_trunk = 0.0
     self.mut_som_cnv_ratio = 0.0
     # sequencing attributes
@@ -380,13 +382,24 @@ def get_tumor_setup_DEC(
   #print(tree_ultra_nwk, file=sys.stderr)
   #print(tree_ultra_ete, file=sys.stderr)
 
-  # RANGE EVOLUTIONs
+  # RANGE EVOLUTION
   #-----------------------------------------------------------------------------
   # construct instantaneous rate matrix
   Q = get_rate_matrix(disp, ext)
-
+  
   # simulate range evolution
+  clone_range = {}
   all_regions_populated = False
+
+  # if only single clone, it is present in all areas
+  if num_clones == 1:
+    id_clone = lbl_clones[0]
+    log_evol = 'starting range evolution on ultrametric tree...\n'
+    clone_range[id_clone] = list(range(num_regions))
+    log_evol += 'init:  {} in {}\n'.format(id_clone, clone_range[id_clone])
+    
+    all_regions_populated = True
+
   num_retries_left = num_retries
   while not all_regions_populated and num_retries_left > 0:
     clone_range = {}
@@ -495,27 +508,33 @@ def write_tumor_scenario(tumor_setup, dir_out_root, args):
   conf['seed'] = tumor_setup.seed
   conf['tree'] = fn_tree
   conf['sampling'] = fn_prev
-  conf['mut-gl-rate'] = tumor_setup.mut_gl_rate
-  conf['mut-som-rate'] = tumor_setup.mut_som_rate
+  if not tumor_setup.mut_gl_rate is None:
+    conf['mut-gl-rate'] = tumor_setup.mut_gl_rate
+  if not tumor_setup.mut_gl_num is None:
+    conf['mut-gl-num'] = tumor_setup.mut_gl_num
+  if not tumor_setup.mut_som_rate is None:
+    conf['mut-som-rate'] = tumor_setup.mut_som_rate
+  if not tumor_setup.mut_som_num is None:
+    conf['mut-som-num'] = tumor_setup.mut_som_num
   conf['mut-som-trunk'] = tumor_setup.mut_som_trunk
   conf['mut-som-cnv-ratio'] = tumor_setup.mut_som_cnv_ratio
   conf['seq-rc-error'] = tumor_setup.seq_rc_error
   if args:
-    if args.ref_seq_num:
+    if not args.ref_seq_num is None:
       conf['ref-seq-num'] = args.ref_seq_num
-    if args.ref_seq_len_mean:
+    if not args.ref_seq_len_mean is None:
       conf['ref-seq-len-mean'] = args.ref_seq_len_mean
-    if args.ref_seq_len_sd:
+    if not args.ref_seq_len_sd is None:
       conf['ref-seq-len-sd'] = args.ref_seq_len_sd
-    if args.seq_read_gen:
+    if not args.seq_read_gen is None:
       conf['seq-read-gen'] = args.seq_read_gen
-    if args.seq_art_path:
+    if not args.seq_art_path is None:
       conf['seq-art-path'] = args.seq_art_path
-    if args.seq_coverage:
+    if not args.seq_coverage is None:
       conf['seq-coverage'] = args.seq_coverage
     if args.smp_lbl_nrm:
       pass
-    if args.tree_lbl_og:
+    if not args.tree_lbl_og is None:
       conf['tree-healthy-label'] = args.tree_lbl_og
 
   # export config to file
