@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# vim: syntax=python tabstop=2 shiftwidth=2 expandtab
+# coding: utf-8
 from __future__ import print_function
 
 from simtools import scenario, stat, subsample
