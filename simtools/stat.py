@@ -6,7 +6,7 @@ import re
 import sys
 import numpy as np
 from pydoc import locate  # dynamic type casts
-from scipy.stats import beta, uniform
+from scipy.stats import beta, binom, gamma, nbinom, poisson, uniform
 
 class Distribution:
   '''Enables and sampling of values from a given statistical distribution.
@@ -48,6 +48,33 @@ class Distribution:
       l = float(m.group('p1'))
       h = float(m.group('p2'))
       self._f_rand = lambda n: uniform.rvs(l, h-l, size=n)
+    elif m.group('d').lower() == 'binom': # Binomial distribution
+      if not m.group('p1') or not m.group('p2'):
+        raise ValueError('Binomial distribution requires two params: Binom:n,p. (got "{}")'.format(str_dist))
+      n = int(m.group('p1'))
+      p = float(m.group('p2'))
+      self._f_rand = lambda m: binom.rvs(n, p, size=m)
+    elif m.group('d').lower() == 'nb': # Negative Binomial distribution
+      # sample from Poisson with Gamma-distributed means
+      if not m.group('p1') or not m.group('p2'):
+        raise ValueError('Negative Binomial distribution requires two params: NB:mu,disp. (got "{}")'.format(str_dist))
+      mu   = float(m.group('p1'))
+      disp = float(m.group('p2'))
+      gamma_shape = disp
+      gamma_scale = (disp+mu)/disp-1
+      f_pois = lambda l: poisson.rvs(l)
+      self._f_rand = lambda n: map(f_pois, gamma.rvs(gamma_shape, scale=gamma_scale, size=n))
+    elif m.group('d').lower() == 'bp': # Bounded Pareto distribution
+      # formulation from: https://en.wikipedia.org/wiki/Pareto_distribution#Bounded_Pareto_distribution
+      if not m.group('p1') or not m.group('p2') or not m.group('p3'):
+        raise ValueError('Bounded Pareto distribution requires three params: BP:L,H,a. (got "{}")'.format(str_dist))
+      l = float(m.group('p1'))
+      h = float(m.group('p2'))
+      a = float(m.group('p3'))
+      if not (l > 0.0 and l < h):
+        raise ValueError('Limits for Bounded Pareto must satisfy 0<L<H.')
+      f_bp = lambda u: (-1*(u*h**a - u*l**a - h**a)/(h**a * l**a))**(-1/a)
+      self._f_rand = lambda n: map(f_bp, uniform.rvs(0, 1, size=n))  
     else:
       raise ValueError('Unknown distribution: "{}"'.format(str_dist))
   
