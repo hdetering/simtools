@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-from simtools import scenario, stat, subsample
+from simtools import scenario, spikein, stat, subsample
 
 import os
+import re
 import sys
 import random
 import argparse
 import numpy as np
+import pandas as pd
 
 # globals
 MAX_SEED = 2**31-1
@@ -120,6 +122,59 @@ Parameters:
     scenario.write_tumor_scenario(ts, args.out, args)
     print('{}:\t{}'.format(i+1, os.path.join(os.path.abspath(args.out), ts.id)))
 
+def run_spikein(args):
+  np.random.seed(seed=args.seed)
+  workdir = os.path.abspath(args.dir)
+  print('''
+Adding variants to existing VCF.
+-------------------------------------------------------------------------------
+Parameters:
+  workdir:          {}
+  prevalences:      {}
+  reference:        {}
+  mutation load:    {}
+  VAF distribution: {}
+  target depth:     {}
+  infinite sites:   {}
+  seed:             {}
+-------------------------------------------------------------------------------
+'''.format(
+    workdir,
+    args.prev.name,
+    args.ref.name,
+    args.mut_load,
+    args.vaf_dist,
+    args.depth,
+    'no' if args.no_ism else 'yes',
+    args.seed),
+  file=sys.stderr)
+
+  # parse prevalence matrix
+  df_prev = pd.read_csv(args.prev, index_col=0)
+  # locate input VCF files
+  fns = [os.path.join(workdir, fn) for fn in sorted(os.listdir(workdir)) if re.match('^R\w+.rc.vcf.gz$', fn)]
+
+  # sanity checks
+  assert len(fns) == len(df_prev.index) # all regions have a VCF file
+
+  dist_load = stat.Distribution(args.mut_load)
+  mut_load = dist_load.sample(1)[0]
+  dist_vaf = stat.Distribution(args.vaf_dist)
+  # sample depth from negative binomial distro
+  mu = args.depth
+  dispersion = 30
+  dist_dp = stat.Distribution('NB:{},{}'.format(mu, dispersion))
+
+  spikein.main(
+    fns,
+    df_prev,
+    args.ref,
+    mut_load,
+    dist_dp,
+    dist_vaf,
+    not args.no_ism
+  )
+
 def run_subsample(args):
   print('''
 Subsampling variants from tumor dataset (output of CloniPhy simulator).
@@ -185,7 +240,9 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Generate and convert files for use with CloniPhy.')
   subparsers = parser.add_subparsers(title="mode")
 
+  #-----------------------------------------------------------------------------
   parser_scenario = subparsers.add_parser('scenario')
+  parser_scenario.set_defaults(func=run_gen_scenario)
   parser_scenario.add_argument('--nrep', type=int, default=1, help='Number of replicates [1].')
   parser_scenario.add_argument('--out', default='sims', help='Output directory ["sims"]')
   parser_scenario.add_argument('--seed', type=int, help='Master random seed.')
@@ -224,9 +281,24 @@ if __name__ == '__main__':
   group_seq.add_argument('--seq-art-path', help='Path to ART executable.')
   group_seq.add_argument('--seq-coverage', type=int, help='Sequencing depth.')
   group_seq.add_argument('--seq-rc-error', default='F:0.0', help='Sequencing error rate (per bp).')
-  parser_scenario.set_defaults(func=run_gen_scenario)
-
+  #-----------------------------------------------------------------------------
+  
+  # spike in mutations following a VAF distribution into existing VCF
+  #-----------------------------------------------------------------------------
+  parser_spikein = subparsers.add_parser('spikein')
+  parser_spikein.set_defaults(func=run_spikein)
+  parser_spikein.add_argument('--dir', required=True, help='Working directory (for input/output files).')
+  parser_spikein.add_argument('--prev', type = argparse.FileType('rt'), required=True, help='Input clone prevalence file.')
+  parser_spikein.add_argument('--ref', type = argparse.FileType('rt'), required=True, help='Reference genome.')
+  parser_spikein.add_argument('--mut-load', default='F:0.5', help='Mutational load of neutral muts (fraction of total vars).')
+  parser_spikein.add_argument('--vaf-dist', default='U:0.0,0.5', help='Variant allele frequency distribution.')
+  parser_spikein.add_argument('--depth', required=True, help='Mean sequencing depth.')
+  parser_spikein.add_argument('--no-ism', action='store_true', help='Deactivates infinite sites model.')
+  parser_spikein.add_argument('--seed', type=int, help='Random seed.')
+  #-----------------------------------------------------------------------------
+  
   # select a subset of variants from a tumor dataset
+  #-----------------------------------------------------------------------------
   parser_subsample = subparsers.add_parser('subsample')
   parser_subsample.set_defaults(func=run_subsample)
   parser_subsample.add_argument('--dir-parent', required=True, help='Directory with simulated tumor data.')
@@ -236,7 +308,8 @@ if __name__ == '__main__':
   parser_subsample.add_argument('--snv-som-frac', default='U:0.1,1.0', help='Fraction of true somatic SNVs.')
   parser_subsample.add_argument('--snv-som-fpr', default='U:0.0,0.5', help='False positive rate among somatic SNVs.')
   #parser_subsample.add_argument('--snv-rc-min', default='U:1,5', help='Minimum number of reads to detect variant.')
-
+  #-----------------------------------------------------------------------------
+  
   if len(sys.argv) == 1:
     parser.print_usage(sys.stderr)
     sys.exit(1)
