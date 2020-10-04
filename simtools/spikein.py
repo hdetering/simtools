@@ -45,7 +45,8 @@ class Variant:
       sample_indexes = {s: i for i, s in enumerate(lst_samples)}
     )
     samp_fmt = vcf.model.make_calldata_tuple(self.formats)
-    samples = [vcf.model._Call(rec, smp, samp_fmt(*(list(vals.values())))) for smp, vals in self.smp_data.items()]
+    samples = [vcf.model._Call(rec, smp, samp_fmt(*(list(vals.values())))) 
+               for smp, vals in self.smp_data.items() if smp in lst_samples]
     rec.samples = samples
     return rec
 
