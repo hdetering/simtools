@@ -142,8 +142,14 @@ def write_vcfs(
   for idx_vcf, fn_vcf in enumerate(lst_fn_vcf):
     smp = os.path.basename(fn_vcf).split('.')[0]
     rdr = vcf.Reader(filename=fn_vcf)
-    fh_out = open(lst_fn_out[idx_vcf], 'w')
-    wtr = vcf.Writer(fh_out, rdr)
+    fn = lst_fn_out[idx_vcf]
+    if fn.endswith('.gz'):
+      fh_out = open(lst_fn_out[idx_vcf], 'wb')
+      fh = bgip.Writer(fh_out)
+    else:
+      fh_out = open(lst_fn_out[idx_vcf], 'wt')
+      fh = fh_out
+    wtr = vcf.Writer(fh, rdr)
     for chrom, pos_var in dict_smp_loc_var[smp].items():
       for pos, vars in pos_var.items():
         for v in vars:
