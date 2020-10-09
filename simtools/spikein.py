@@ -146,7 +146,7 @@ def write_vcfs(
     fn = lst_fn_out[idx_vcf]
     if fn.endswith('.gz'):
       fh_out = open(lst_fn_out[idx_vcf], 'wb')
-      fh = bgzip.Writer(fh_out)
+      fh = bgzip.BGZipWriter(fh_out)
     else:
       fh_out = open(lst_fn_out[idx_vcf], 'wt')
       fh = fh_out
