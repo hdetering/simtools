@@ -4,6 +4,7 @@ from simtools import stat
 
 import os
 import vcf
+import bgzip
 import numpy as np
 import pandas as pd
 from Bio import SeqIO
@@ -145,7 +146,7 @@ def write_vcfs(
     fn = lst_fn_out[idx_vcf]
     if fn.endswith('.gz'):
       fh_out = open(lst_fn_out[idx_vcf], 'wb')
-      fh = bgip.Writer(fh_out)
+      fh = bgzip.Writer(fh_out)
     else:
       fh_out = open(lst_fn_out[idx_vcf], 'wt')
       fh = fh_out
