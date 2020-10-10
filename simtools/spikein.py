@@ -3,6 +3,7 @@
 from simtools import stat
 
 import os
+import io
 import vcf
 import bgzip
 import numpy as np
@@ -145,17 +146,19 @@ def write_vcfs(
     rdr = vcf.Reader(filename=fn_vcf)
     fn = lst_fn_out[idx_vcf]
     if fn.endswith('.gz'):
-      fh_out = open(lst_fn_out[idx_vcf], 'wb')
+      fh_out = open(fn, 'wb')
       fh = bgzip.BGZipWriter(fh_out)
     else:
-      fh_out = open(lst_fn_out[idx_vcf], 'wt')
+      fh_out = open(fn, 'wt')
       fh = fh_out
+    #import pdb; pdb.set_trace()
     wtr = vcf.Writer(fh, rdr)
     for chrom, pos_var in dict_smp_loc_var[smp].items():
       for pos, vars in pos_var.items():
         for v in vars:
           rec = v.to_vcf_record([smp])
           wtr.write_record(rec)
+    fh.close()
     fh_out.close()
   
 
