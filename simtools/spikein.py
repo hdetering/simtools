@@ -132,6 +132,10 @@ def parse_vcf(lst_fn_vcf, lst_id_sample, dict_chrom_pos):
 
   return num_som_vars, dict_var
 
+class TXTBGZipWriter(bgzip.BGZipWriter):
+  def write(self, text):
+    super().write(text.encode("utf-8"))
+
 def write_vcfs(
   lst_fn_vcf,      # input VCF files
   #df_prev,         # prevalence matrix
@@ -147,7 +151,8 @@ def write_vcfs(
     fn = lst_fn_out[idx_vcf]
     if fn.endswith('.gz'):
       fh_out = open(fn, 'wb')
-      fh = bgzip.BGZipWriter(fh_out)
+      #fh = bgzip.BGZipWriter(fh_out)
+      fh = TXTBGZipWriter(fh_out)
     else:
       fh_out = open(fn, 'wt')
       fh = fh_out
