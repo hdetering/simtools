@@ -5,7 +5,7 @@
 #--------------------#
 
 # output folder
-out-dir: "output"
+out-dir: "sim"
 
 # how much debug output should be printed to screen? (1: lowest)
 verbosity: 1
@@ -54,8 +54,8 @@ ref-nuc-freqs: [ 0.3, 0.2, 0.2, 0.3 ]
 
 # generate reference sequences based on human trinucleotide frequencies
 ref-use-trinuc: true
-#ref-trinuc-profile: /home/uvi/be/hde/code/cloniphy/resources/trinuc_freqs.hs37d5.csv
-ref-trinuc-profile: /home/harry/code/cloniphy/resources/trinuc_freqs.hs37d5.csv
+ref-trinuc-profile: /home/uvi/be/hde/code/cloniphy/resources/trinuc_freqs.hs37d5.csv
+#ref-trinuc-profile: /home/harry/code/cloniphy/resources/trinuc_freqs.hs37d5.csv
 
 #-------------------------------#
 # germline evolution parameters #
@@ -63,9 +63,9 @@ ref-trinuc-profile: /home/harry/code/cloniphy/resources/trinuc_freqs.hs37d5.csv
 
 # germline variants (to generate personal genome from reference)
 #mut-gl-vcf: data/input/1000G_phase1.indels.b37.vcf
-mut-gl-num : 3000
-# ratio of homozygous germline variants (not yet implemented...)
-mut-gl-hom : 0.2
+mut-gl-num : 10000
+# ratio of homozygous germline variants
+mut-gl-hom : 0.33
 
 # evolutionary model
 # choices: 'JC', 'F81', 'K80', 'HKY', 'matrix', 'matrixFromVcf'
@@ -74,7 +74,7 @@ mut-gl-model-params:
   # nucleotide frequencies:
   nucFreq : [ 0.3, 0.2, 0.2, 0.3 ]
   # transition-transversion ratio:
-  kappa   : 1.7
+  kappa   : 2
   # custom nucleotide substitution matrix (ACGT):
   Qa      : [    0.0, 0.0406, 0.1661, 0.0331 ]
   Qc      : [ 0.0417,    0.0, 0.0438, 0.1746 ]
@@ -89,7 +89,7 @@ mut-gl-model-params:
 mut-som-num: 100
 # number of transforming mutations shared by all clones
 # (included in total mutations)
-mut-som-trunk: 0
+mut-som-trunk: 0.1000
 
 # single nucleotide variants
 #------------------------------
@@ -121,15 +121,15 @@ mut-som-cnv-gain-prob: 0.5
 # event rates (will be normalized by sum of all rates)
 
 # whole genome duplication rate
-mut-som-cnv-rate-wgd: 0.01
+mut-som-cnv-rate-wgd: 0.0000
 # whole chromosome gain/loss rate
-mut-som-cnv-rate-chr: 0.05
+mut-som-cnv-rate-chr: 0.0500
 # chromosome arm gain/loss rate
-mut-som-cnv-rate-arm: 0.05
+mut-som-cnv-rate-arm: 0.0500
 # telomere-bounded gain/loss rate
-mut-som-cnv-rate-tel: 0.40
+mut-som-cnv-rate-tel: 0.4000
 # focal gain/loss rate
-mut-som-cnv-rate-foc: 0.49
+mut-som-cnv-rate-foc: 0.5000
 
 #-------------------------------#
 #      sampling parameters      #

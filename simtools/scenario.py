@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# vim: syntax=python tabstop=2 shiftwidth=2 expandtab
+# coding: utf-8
 from __future__ import print_function, division
 
 from . import stat
@@ -52,6 +54,31 @@ class TumorSetup:
     self.mut_som_cnv_ratio = 0.0
     # sequencing attributes
     self.seq_rc_error = 0.0
+
+  def __str__(self):
+    str_rep = '''
+-------------------------------------------------------------------------------
+TumorSetup
+-------------------------------------------------------------------------------
+  id: {}
+  n_clones:   {}
+  n_samples:  {}
+  tumor type: {}
+  clone tree: {}
+  purity:     {}
+  seed:       {}
+-------------------------------------------------------------------------------
+'''.format(
+    self.id,
+    self.nclones,
+    self.nsamples,
+    self.ttype,
+    self.tree_nwk,
+    self.purity,
+    os.path.abspath(args.out),
+    self.seed)
+
+    return str_rep
 
 def powerset(iterable):
     'powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)'
@@ -297,6 +324,25 @@ def get_tumor_setup_DEC(
 
   # make reproducible random choices
   np.random.seed(seed=seed)
+
+  print('''
+Generating tumor setup (DEC model).
+-------------------------------------------------------------------------------
+Parameters:
+  num_clones:  {}
+  num_samples: {}
+  rate_disp:   {}
+  rate_ext:    {}
+  norm_cont:   {}
+  seed:        {}
+-------------------------------------------------------------------------------
+'''.format(
+    num_clones,
+    num_samples,
+    disp,
+    ext,
+    cont,
+    seed), file=sys.stderr)
 
   #import pdb
   #pdb.set_trace()
